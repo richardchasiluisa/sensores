@@ -1,0 +1,4 @@
+flask==0.10.1
+pyFirmata==1.0.3
+simple_websocket_server==0.3.1
+websocket_client==0.54.0
