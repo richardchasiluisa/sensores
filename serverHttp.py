@@ -2,7 +2,7 @@
 try:
         from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 except:
-        from http.server import BaseHTTPRequestHnadler,HTTPServer
+        from http.server import BaseHTTPRequestHandler,HTTPServer
 from os import curdir, sep
 
 try:
