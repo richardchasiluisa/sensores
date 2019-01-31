@@ -1,54 +1,43 @@
+#!/usr/bin/python
 
 try:
         from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 except:
         from http.server import BaseHTTPRequestHandler,HTTPServer
 from os import curdir, sep
-
 try:
         from urlparse import urlparse
-        from urlparse import urlparse,parse_qs
+        from urlparse import urlparse, parse_qs
 except:
         from urllib.parse import urlparse, parse_qs
+
 import os
-port = int(os.environ.get("PORT",8000))
-                
-PORT_NUMBER =port
+port = int(os.environ.get("PORT", 8080))        
+PORT_NUMBER = port
 
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-from os import curdir, sep
-from urlparse import urlparse
-from urlparse import urlparse, parse_qs
-
-
-
-
-pot0=0
-pot1=0
+sensor=0
 #This class will handles any incoming request from
-#the browser 
+#the browser
+s1=0
+s2=0
 def getArguments(path):
-        global pot0,pot1
+        global s1,s2
         try:
-                print (path)
+                #print path
                 query = urlparse(path).query
                 query_components = dict(qc.split("=") for qc in query.split("&"))
                 print (query_components)
                 try:
-                        pot0= query_components['sen0']
-                except:
+                        s1= query_components['sensor1']
+                except:#EVITA ERRORES JUNTO CON EL TRY
                         pass
                 try:
-                        pot1= query_components['sen1']
+                        s2= query_components['sensor2']
                 except:
                         pass
-                print(pot0,pot1)
-
-
-                #sensor= query_components['sensor']
-                #print sensor
+                print (s1,s2)
+                #print s2
                 #imsi = query_components["imsi"]
-
         except:
                 print ('No argumentos')
 def action(path):
@@ -57,12 +46,11 @@ class myHandler(BaseHTTPRequestHandler):
         
         #Handler for the GET requests
         def do_GET(self):
-                global pot0,pot1
-                if self.path=="/":
+                if self.path=="/": #127.0.0.0:8080
                         self.path="/index.html"
-                elif self.path.find('?'):
+                if self.path.find('?'):
                         print (self.path)
-                        #query_components = parse_qs(urlparse(self.path).query)
+                        query_components = parse_qs(urlparse(self.path).query)
                         #imsi = query_components["imsi"] 
                         action(self.path)
                         self.path="/index.html"
@@ -88,18 +76,19 @@ class myHandler(BaseHTTPRequestHandler):
                         if self.path.endswith(".css"):
                                 mimetype='text/css'
                                 sendReply = True
+
                         if sendReply == True:
                                 #Open the static file requested and send it
-                                f = open(curdir + sep + self.path) 
-                                self.send_response(200)
-                                self.send_header('Content-type',mimetype)
+                                f = open(curdir + sep + self.path) #LEER DOCUMENTO DE TEXTO curdir da el directorio en donde se ejectuta el python es decir f=open("index.html";'r')
+                                self.send_response(200)#200 valor de ok para la pag 503 erro de pagina
+                                self.send_header('Content-type',mimetype)#mimetype = html
                                 self.end_headers()
-                                data=f.read()
-                                data= data.replace('pot0',str(pot0)).replace('pot1',str(pot1))
+                                data=f.read()#a la variable data se le asigan el comando de lectura de la variable f
+                                data=data.replace('s1',str(s1)).replace('s2',str(s2))#remplaza el texto s1 por el valor de la variable para q [puieda ser impresa como un string
                                 try:
                                         self.wfile.write(data)
                                 except:
-                                        self.wfile.write(bytes(data,'UTF-8'))
+                                        self.wfile.write(bytes(data, 'UTF-8'))
                                 f.close()
                         return
 
@@ -110,14 +99,11 @@ class myHandler(BaseHTTPRequestHandler):
 try:
         #Create a web server and define the handler to manage the
         #incoming request
-        
         server = HTTPServer(('', PORT_NUMBER), myHandler)
         print ('Started httpserver on port ') , PORT_NUMBER
         
         #Wait forever for incoming htto requests
         server.serve_forever()
-
-
 
 except KeyboardInterrupt:
         print ('^C received, shutting down the web server')
